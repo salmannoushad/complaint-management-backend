@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user'); // Assuming you have a User model
-const dotenvConfig = require('../config/dotenv'); // To access JWT_SECRET
+const User = require('../models/user'); 
+const dotenvConfig = require('../config/dotenv');
 const userService = require('../services/userService');
 
 const authController = {
@@ -18,20 +18,20 @@ const authController = {
       }
 
       const user = userRows[0];
-      console.log("user", user.password);
-      
+      console.log("====> user password: ", user.password, password);
+
 
       // Verify password
       const isMatch = await bcrypt.compare(password, user.password);
-      console.log("isMatch",  isMatch);
-      
-      // if (!isMatch) {
-      //   return res.status(400).json({ message: 'Invalid credentialsssss' });
-      // }
+      console.log("====> isMatch", isMatch);
+
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Invalid credentialsssss' });
+      }
 
       // Generate JWT token
-      const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-        expiresIn: '1h',
+      const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, process.env.JWT_SECRET, {
+        expiresIn: '10h',
       });
 
       res.json({ token });
@@ -43,10 +43,15 @@ const authController = {
 
   // User Registration
   register: async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
+    }
+
     try {
       // Force role to 'Customer' if not provided or unauthorized
-      const userRole = role && role === 'Admin' ? 'Admin' : 'Customer';
+      const userRole = 'Customer';
 
       // Create the user via service
       const result = await userService.createUser(name, email, password, userRole);

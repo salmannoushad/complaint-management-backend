@@ -11,6 +11,11 @@ const Ticket = {
     return db.promise().query(query);
   },
 
+  getUserTickets: (customerId) => {
+    const query = `SELECT * FROM tickets WHERE customer_id = ?`;
+    return db.promise().query(query, [customerId]);
+  },
+
   getTicketById: (id) => {
     const query = `SELECT * FROM tickets WHERE id = ?`;
     return db.promise().query(query, [id]);
