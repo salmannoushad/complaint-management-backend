@@ -4,9 +4,10 @@ const ticketController = {
   createTicket: async (req, res) => {
     const { subject, description } = req.body;
     const customerId = req.user.id;
+    const customerName = req.user.name;
 
     try {
-      const [result] = await Ticket.createTicket(subject, description, customerId);
+      const [result] = await Ticket.createTicket(subject, description, customerId, customerName);
       res.status(201).json({ message: 'Ticket created successfully', ticketId: result.insertId });
     } catch (error) {
       console.error('Error creating ticket:', error);
@@ -95,6 +96,9 @@ const ticketController = {
     const { status } = req.body;
     const { ticketId } = req.params;
 
+    console.log(status, ticketId);
+    
+
     try {
       await Ticket.updateTicketStatus(ticketId, status);
       res.status(200).json({ message: 'Ticket status updated' });
@@ -108,18 +112,67 @@ const ticketController = {
     const { message } = req.body;
     const { ticketId } = req.params;
     const adminId = req.user.id;
+    const adminName = req.user.name;
 
-    console.log(message, ticketId, adminId);
+    // console.log('adminName', adminName);
+    
+
+    console.log(message, ticketId, adminId, adminName);
 
 
     try {
-      await Ticket.addReplyToTicket(ticketId, message, adminId);
+      await Ticket.addReplyToTicket(ticketId, message, adminId, adminName);
       res.status(200).json({ message: 'Reply added to ticket' });
     } catch (error) {
       console.error('Error adding reply to ticket:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
-  }
+  },
+
+  getTicketReplies: async (req, res) => {
+    const { ticketId } = req.params;
+    const userId = req.user.id; // Authenticated user's ID
+    const userRole = req.user.role; // Authenticated user's role
+  
+    try {
+      if (userRole === 'Customer') {
+        // Verify the ticket belongs to the customer
+        const [ticket] = await Ticket.getCustomerTicketById(ticketId, userId);
+  
+        if (!ticket || ticket.length === 0) {
+          return res.status(403).json({ message: 'You are not authorized to view replies for this ticket' });
+        }
+  
+        // Fetch replies for the customer's ticket
+        const [replies] = await Ticket.getTicketReplies(ticketId);
+  
+        if (replies.length === 0) {
+          return res.status(200).json([{ message: 'No replies found for this ticket' }]);
+        }
+  
+        console.log('replies', replies);
+        return res.status(200).json(replies);
+      }
+  
+      if (userRole === 'Admin') {
+        // Admin can fetch all replies for the ticket
+        const [replies] = await Ticket.getTicketReplies(ticketId);
+  
+        if (replies.length === 0) {
+          return res.status(200).json([{ message: 'No replies found for this ticket' }]);
+        }
+  
+        return res.status(200).json(replies);
+      }
+  
+      return res.status(403).json({ message: 'You are not authorized to view replies' });
+    } catch (error) {
+      console.error('Error fetching ticket replies:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  },
+  
+  
 };
 
 module.exports = ticketController;

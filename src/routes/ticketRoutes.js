@@ -11,6 +11,9 @@ router.get('/my-tickets', authMiddleware, roleMiddleware('Customer'), ticketCont
 router.patch('/:ticketId', authMiddleware, roleMiddleware('Customer'), ticketController.updateTicket);
 router.delete('/:ticketId', authMiddleware, roleMiddleware('Customer'), ticketController.deleteTicket); 
 
+// both users can see ticket replies
+router.get('/:ticketId/replies', authMiddleware, ticketController.getTicketReplies);
+
 // Admin-specific routes
 router.get('/', authMiddleware, roleMiddleware('Admin'), ticketController.getAllTickets);
 router.patch('/:ticketId/status', authMiddleware, roleMiddleware('Admin'), ticketController.updateTicketStatus);
