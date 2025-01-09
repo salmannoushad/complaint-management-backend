@@ -8,6 +8,8 @@ const router = express.Router();
 // Customer-specific routes
 router.post('/', authMiddleware, roleMiddleware('Customer'), ticketController.createTicket);
 router.get('/my-tickets', authMiddleware, roleMiddleware('Customer'), ticketController.getUserTickets);
+router.patch('/:ticketId', authMiddleware, roleMiddleware('Customer'), ticketController.updateTicket);
+router.delete('/:ticketId', authMiddleware, roleMiddleware('Customer'), ticketController.deleteTicket); 
 
 // Admin-specific routes
 router.get('/', authMiddleware, roleMiddleware('Admin'), ticketController.getAllTickets);

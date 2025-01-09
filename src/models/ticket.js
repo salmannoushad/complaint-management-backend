@@ -21,6 +21,17 @@ const Ticket = {
     return db.promise().query(query, [id]);
   },
 
+  deleteTicket: (id) => {
+    const query = `DELETE FROM tickets WHERE id = ?`;
+    return db.promise().query(query, [id]);
+  },
+
+  updateTicket: (id, subject, description) => {
+    const query = `UPDATE tickets SET subject = ?, description = ? WHERE id = ?`;
+    return db.promise().query(query, [subject, description, id]);
+  },
+  
+  
   updateTicketStatus: (id, status) => {
     const query = `UPDATE tickets SET status = ? WHERE id = ?`;
     return db.promise().query(query, [status, id]);
